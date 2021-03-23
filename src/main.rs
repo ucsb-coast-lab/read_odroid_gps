@@ -63,7 +63,7 @@ fn main() {
     let eps = 1e-6;
     let (mut lat, mut lon) = (0.0, 0.0);
     loop {
-        match rx_gps.recv() {
+        match rx_gps.try_recv() {
             Ok((a, b)) => {
                 if ((lat - a) > eps) {
                     lat = a;
@@ -79,8 +79,8 @@ fn main() {
             Err(e) => (),
         };
         let position = WGS84::from_degrees_and_meters(lat, lon, 0.0);
-        println!("Current position: {:?}",position);
-        thread::sleep(Duration::from_millis(2000));
+        println!("Current position: ({},{})",position.latitude_degrees(), position.longitude_degrees());
+        thread::sleep(Duration::from_millis(1000));
     }
 
     gps.join().unwrap();
