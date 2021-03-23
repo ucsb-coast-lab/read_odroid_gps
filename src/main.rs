@@ -1,9 +1,9 @@
+use nav_types::*;
 use nmea::Nmea;
 use std::io::{self, Write};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
-use nav_types::*;
 
 fn main() {
     let port_name = "/dev/ttyACM0";
@@ -68,18 +68,22 @@ fn main() {
                 if ((lat - a) > eps) {
                     lat = a;
                     println!("(lat, lon) = ({}, {})", lat, lon);
-                } 
+                }
                 if ((lon - b) > eps) {
                     lon = b;
                     println!("(lat, lon) = ({}, {})", lat, lon);
-                } 
+                }
                 lat = a;
                 lon = b;
             }
             Err(e) => (),
         };
         let position = WGS84::from_degrees_and_meters(lat, lon, 0.0);
-        println!("Current position: ({},{})",position.latitude_degrees(), position.longitude_degrees());
+        println!(
+            "Current position: ({},{})",
+            position.latitude_degrees(),
+            position.longitude_degrees()
+        );
         thread::sleep(Duration::from_millis(1000));
     }
 
@@ -89,7 +93,6 @@ fn main() {
 // Based on `rust-navigation` crate
 use std::f64::consts::PI;
 fn estimate_bearing(a: WGS84<f64>, b: WGS84<f64>) -> f64 {
-
     let start_lat = a.latitude_radians();
     let start_lon = a.longitude_radians();
     let dest_lat = b.latitude_radians();
@@ -97,8 +100,7 @@ fn estimate_bearing(a: WGS84<f64>, b: WGS84<f64>) -> f64 {
 
     let mut delta_lon = dest_lon - start_lon;
 
-    let delta_phi =
-    ((dest_lat / 2.0 + PI / 4.0).tan() / (start_lat / 2.0 + PI / 4.0).tan()).ln();
+    let delta_phi = ((dest_lat / 2.0 + PI / 4.0).tan() / (start_lat / 2.0 + PI / 4.0).tan()).ln();
 
     if delta_lon.abs() > PI {
         if delta_lon > 0.0 {
@@ -110,14 +112,8 @@ fn estimate_bearing(a: WGS84<f64>, b: WGS84<f64>) -> f64 {
 
     let bearing = (delta_lon.atan2(delta_phi).to_degrees() + 360.0) % 360.0;
     let bearing = match bearing <= 180.0 {
-        true => {
-            360.0 - bearing
-        },
-        false => {
-            -bearing
-        }
-
+        true => 360.0 - bearing,
+        false => -bearing,
     };
     bearing
-
 }
